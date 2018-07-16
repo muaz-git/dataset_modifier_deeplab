@@ -1,3 +1,4 @@
-ignorefolder
-sample/to_ignore.txt
-to_ignore_.txt
+*
+!README.md
+!sample/to_add_sub.txt
+!to_add.txt
