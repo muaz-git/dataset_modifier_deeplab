@@ -8,18 +8,20 @@ import os
 
 import sys
 
-# FLAGS = tf.app.flags.FLAGS
-#
-# tf.app.flags.DEFINE_string('gta_pfd_root',
-#                            './cityscapes',
-#                            'GTA (Playing for data) dataset root folder.')
-#
-#
-#
-# tf.app.flags.DEFINE_string(
-#     'output_dir',
-#     './tfrecord',
-#     'Path to save converted SSTable of TensorFlow examples.')
+FLAGS = tf.app.flags.FLAGS
+
+tf.app.flags.DEFINE_string('img_dir_name',
+                           './gta/images/',
+                           'GTA label files\'s root.')
+
+tf.app.flags.DEFINE_string('trainIDs_dir_name',
+                           './gta/trainIDs/',
+                           'path where encoded label files are saved.')
+
+tf.app.flags.DEFINE_string(
+    'output_dir',
+    './gta/tfrecord/',
+    'Path to save converted SSTable of TensorFlow examples.')
 
 gta_pfd_root = ''
 output_dir = ''
@@ -41,10 +43,11 @@ def _convert_dataset():
         image file with specified postfix could not be found.
     """
     dataset_split = 'train'
-    img_dir_name = '/home/mumu01/Downloads/datasets/gta/samples/'
-    labels_dir_name = '/home/mumu01/Downloads/datasets/gta/trainID/'
-    output_dir = '/home/mumu01/Downloads/datasets/gta/tfrecord/'
-    image_files = get_file_names(img_dir_name)[:70]
+    img_dir_name = FLAGS.img_dir_name
+    labels_dir_name = FLAGS.trainIDs_dir_name
+    output_dir = FLAGS.output_dir
+
+    image_files = get_file_names(img_dir_name)
     label_files = get_file_names(labels_dir_name)
 
     if not(len(image_files) == len(label_files)):

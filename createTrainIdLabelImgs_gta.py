@@ -5,7 +5,19 @@ from os import listdir
 from os.path import isfile, join
 import os
 from collections import namedtuple
+import tensorflow as tf
 
+
+FLAGS = tf.app.flags.FLAGS
+
+tf.app.flags.DEFINE_string('gta_labels',
+                           './gta/labels/',
+                           'GTA label files\'s root.')
+
+tf.app.flags.DEFINE_string(
+    'trainID_dir',
+    './gta/trainIDs/',
+    'Path to save train id files.')
 
 #--------------------------------------------------------------------------------
 # Definitions
@@ -94,10 +106,6 @@ labels = [
 ]
 
 
-mappingMat = loadmat(
-    '/home/mumu01/PycharmProjects/StanfordTF/stanford-tensorflow-tutorials/assignments/02_style_transfer/read_mapping/mapping.mat')
-
-
 # annotation_folder = '/home/mumu01/Downloads/datasets/gta/labels/'
 
 def create_folders(fol_name):
@@ -105,8 +113,8 @@ def create_folders(fol_name):
         os.makedirs(fol_name)
 
 
-annotation_folder = '/home/mumu01/Downloads/datasets/gta/samples/'
-trainID_folder = '/home/mumu01/Downloads/datasets/gta/trainID/'
+annotation_folder = FLAGS.gta_labels
+trainID_folder = FLAGS.trainID_dir
 
 create_folders(trainID_folder)
 
@@ -180,6 +188,7 @@ def get_colored_img_from_gtFine_labelTrainIds(labelTrainIds_img):
             colored_img[np.where(mask == [255])] = assign_color
 
     return colored_img
+
 
 
 file_names = get_file_names(annotation_folder)
