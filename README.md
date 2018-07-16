@@ -5,7 +5,7 @@ This repository includes code which converts datasets i.e. Playing for data, int
 Copy the content of this repository in to folder: `tensorflow/models/research/deeplab/datasets`
 
 ## Steps to do beforehand
-Download data from [here](https://download.visinf.tu-darmstadt.de/data/from_games/).
+Download data i.e. from [here](https://download.visinf.tu-darmstadt.de/data/from_games/).
 Extract them in `tensorflow/models/research/deeplab/datasets` such that you have following directory structure.
 ```
 + datasets
