@@ -1,5 +1,4 @@
 *
 !README.md
-!sample/to_add_sub.txt
-!to_add.txt
-!new_to_add.txt
+!build_gta_pfd_data.py
+!createTrainIdLabelImgs_gta.py
