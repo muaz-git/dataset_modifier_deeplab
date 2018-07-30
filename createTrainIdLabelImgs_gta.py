@@ -10,9 +10,9 @@ import tensorflow as tf
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('gta_labels',
+tf.app.flags.DEFINE_string('colored_labels',
                            './gta/labels/',
-                           'GTA label files\'s root.')
+                           'Path to directory where colored labels exist.')
 
 tf.app.flags.DEFINE_string(
     'trainID_dir',
@@ -113,7 +113,7 @@ def create_folders(fol_name):
         os.makedirs(fol_name)
 
 
-annotation_folder = FLAGS.gta_labels
+annotation_folder = FLAGS.colored_labels
 trainID_folder = FLAGS.trainID_dir
 
 create_folders(trainID_folder)

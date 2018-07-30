@@ -46,7 +46,7 @@ GTA_TRAINIDS_ROOT="${GTA_ROOT}/trainIDs/"
 echo "Encoding label images..."
 # Create training labels.
 python "${WORK_DIR}/createTrainIdLabelImgs_gta.py" \
-    --gta_labels="${GTA_LABELS_ROOT}" \
+    --colored_labels="${GTA_LABELS_ROOT}" \
     --trainID_dir="${GTA_TRAINIDS_ROOT}"
 
 # Build TFRecords of the dataset.
