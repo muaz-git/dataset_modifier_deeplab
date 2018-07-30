@@ -3,3 +3,5 @@
 !build_gta_pfd_data.py
 !createTrainIdLabelImgs_gta.py
 !convert_gta_pfd.sh
+!densecrf_processor.py
+!vis.py
