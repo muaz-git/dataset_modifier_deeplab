@@ -5,3 +5,4 @@
 !convert_gta_pfd.sh
 !densecrf_processor.py
 !vis.py
+!coloredAnnotToID.py
