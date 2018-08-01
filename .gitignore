@@ -6,3 +6,4 @@
 !densecrf_processor.py
 !vis.py
 !coloredAnnotToID.py
+!segmentation_dataset.py

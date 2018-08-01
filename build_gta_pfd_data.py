@@ -1,3 +1,7 @@
+# val : 2500 10% of total
+# train : 14875 60% of total
+# test : 7625 30%
+# total : 25000
 import tensorflow as tf
 import re
 from os import listdir
@@ -5,7 +9,7 @@ from os.path import isfile, join
 import math
 import build_data
 import os
-
+import numpy as np
 import sys
 
 FLAGS = tf.app.flags.FLAGS
@@ -31,10 +35,36 @@ _NUM_SHARDS = 10
 def get_file_names(dir_name):
     only_files = [f for f in listdir(dir_name) if isfile(join(dir_name, f))]
     only_files.sort()
-    return only_files
+    return np.asarray(only_files)
 
 
-def _convert_dataset():
+def split_train_val_sets():
+    np.random.seed(0)  # setting seed to 0 for regeneration
+
+    val_percent = 0.15
+    img_dir_name = FLAGS.img_dir_name
+    labels_dir_name = FLAGS.trainIDs_dir_name
+
+    image_files = get_file_names(img_dir_name)
+    label_files = get_file_names(labels_dir_name)
+
+    number_of_val_images = int(val_percent * len(image_files))
+
+    indices = np.random.permutation(len(image_files))
+
+    valIdx, trainIdx = indices[:number_of_val_images], indices[number_of_val_images:]
+
+    image_files_train, image_files_val = image_files[trainIdx], image_files[valIdx]
+    label_files_train, label_files_val = label_files[trainIdx], label_files[valIdx]
+
+    my_dict = {}
+    my_dict['train'] = (image_files_train.tolist(), label_files_train.tolist())
+    my_dict['val'] = (image_files_val.tolist(), label_files_val.tolist())
+
+    return my_dict
+
+
+def _convert_dataset(dataset_split, dataset):
     """Converts the specified dataset split to TFRecord format.
 
 
@@ -42,16 +72,17 @@ def _convert_dataset():
       RuntimeError: If loaded image and label have different shape, or if the
         image file with specified postfix could not be found.
     """
-    dataset_split = 'train'
+
     img_dir_name = FLAGS.img_dir_name
     labels_dir_name = FLAGS.trainIDs_dir_name
     output_dir = FLAGS.output_dir
 
-    image_files = get_file_names(img_dir_name)
-    label_files = get_file_names(labels_dir_name)
+    image_files = dataset[0]
+    label_files = dataset[1]
 
-    if not(len(image_files) == len(label_files)):
+    if not (len(image_files) == len(label_files)):
         raise RuntimeError('Length mismatch image and label.')
+
     num_images = len(image_files)
     num_per_shard = int(math.ceil(num_images / float(_NUM_SHARDS)))
 
@@ -70,13 +101,16 @@ def _convert_dataset():
                     i + 1, num_images, shard_id))
                 sys.stdout.flush()
                 # Read the image.
-                image_data = tf.gfile.FastGFile(img_dir_name+image_files[i], 'rb').read()
+                image_data = tf.gfile.FastGFile(img_dir_name + image_files[i], 'rb').read()
                 height, width = image_reader.read_image_dims(image_data)
                 # Read the semantic segmentation annotation.
-                seg_data = tf.gfile.FastGFile(labels_dir_name+label_files[i], 'rb').read()
+                seg_data = tf.gfile.FastGFile(labels_dir_name + label_files[i], 'rb').read()
                 seg_height, seg_width = label_reader.read_image_dims(seg_data)
                 if height != seg_height or width != seg_width:
-                    raise RuntimeError('Shape mismatched between image and label.')
+                    print("Shape mismatched between image and label. height. Ignoring.")
+                    continue
+                    raise RuntimeError('Shape mismatched between image and label. height : ', height, ' seg_height: ',
+                                       seg_height, ' width: ', width, ' seg_width: ', seg_width, ' \nlabel_files[i]: ', label_files[i], ' image_files[i]: ', image_files[i])
                 # Convert to tf example.
 
                 if not (image_files[i] == label_files[i]):
@@ -93,8 +127,12 @@ def _convert_dataset():
 
 def main(unused_argv):
     # Only support converting 'train' and 'val' sets for now.
-    # for dataset_split in ['train', 'val']:
-    _convert_dataset()
+    #
+    my_dict = split_train_val_sets()
+
+    for dataset_split in ['train', 'val']:
+        print("converting : "+dataset_split+" set.")
+        _convert_dataset(dataset_split, my_dict[dataset_split])
 
 
 if __name__ == '__main__':
