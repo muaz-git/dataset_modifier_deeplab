@@ -7,3 +7,5 @@
 !vis.py
 !coloredAnnotToID.py
 !segmentation_dataset.py
+!Evaluation/*
+!*/

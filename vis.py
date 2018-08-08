@@ -329,8 +329,7 @@ def main(unused_argv):
             tf.logging.info(
                 'Finished visualization at ' + time.strftime('%Y-%m-%d-%H:%M:%S',
                                                              time.gmtime()))
-            print("\n\t\tChanged this break condition.")
-            break
+
             time_to_next_eval = start + FLAGS.eval_interval_secs - time.time()
             if time_to_next_eval > 0:
                 time.sleep(time_to_next_eval)
