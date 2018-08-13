@@ -14,20 +14,24 @@ class CityscapesEvaluationWrapper(object):
             raise ValueError(eval_dataset + ' does not exist.')
 
     def evaluate_using_CS_script(self):
+
         if not self.__is_script_valid():
             raise ValueError(self.script_path + ' is not a valid script.')
 
         export_file = self.exp_obj.custom_eval_dir + '/resultPixelLevelSemanticLabeling_' + self.eval_dataset + '.json'
-        trainID_dir = self.exp_obj.vis_cityscapes_dir
-        log_file = self.exp_obj.custom_eval_dir+'/wrapper_'+self.eval_dataset+'_logs.txt'
+        ID_dir = self.exp_obj.vis_cityscapes_dir
+        log_file = self.exp_obj.custom_eval_dir + '/wrapper_' + self.eval_dataset + '_logs.txt'
 
         if self.eval_dataset == 'gta':
-            trainID_dir = self.exp_obj.vis_gta_dir
+            ID_dir = self.exp_obj.vis_gta_dir + ' -g'
 
-        complete_script = 'nohup ' + self.script_path + ' -e ' + export_file + ' -t ' + trainID_dir + ' > ' + log_file + ' &'
-        # complete_script = self.script_path + ' -e ' + export_file + ' -t ' + trainID_dir
-        # print("\n\tExecuting "+complete_script)
+        complete_script = 'nohup ' + self.script_path + ' -e ' + export_file + ' -t ' + ID_dir + ' > ' + log_file + ' &'
+
         os.system(complete_script)
 
+    def __file_exist(self, file_path):
+        return os.path.isfile(file_path)
+
     def __is_script_valid(self):
-        return os.path.isfile(self.script_path)
+        return self.__file_exist(self.script_path)
+

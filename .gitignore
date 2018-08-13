@@ -8,4 +8,8 @@
 !coloredAnnotToID.py
 !segmentation_dataset.py
 !Evaluation/*
+!Evaluation/Evaluator/*
+!Evaluation/Iterator/*
+!Evaluation/JSONResults/*
+!Evaluation/MetricsGeneratorPkg/*
 !*/
