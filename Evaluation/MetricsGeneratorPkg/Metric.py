@@ -53,7 +53,11 @@ class Metric(object):
         else:
             print("Data with this dimension cannot be handled")
 
-        self.mat += confusion_matrix(temp_target, temp_prediction, labels=self.list_classes)
+        try:
+            self.mat += confusion_matrix(temp_target, temp_prediction, labels=self.list_classes)
+        except Exception as error:
+            print(error)
+            print('The confusion_matrix() function was not executed')
 
     def scores(self):
         tp = 0

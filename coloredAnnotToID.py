@@ -6,6 +6,7 @@ from os.path import isfile, join
 import os
 from collections import namedtuple
 import tensorflow as tf
+import sys
 
 # by experiment it was found that deeplab generates 'raw_segmentation_results' with images contain Id instead of trainId,
 # also cityscapes' evaluation script performs only with Id instead of trainId. So title of this file is a bit distracting.
@@ -17,7 +18,7 @@ tf.app.flags.DEFINE_string('colored_labels',
                            'Path to directory where colored labels exist.')
 
 tf.app.flags.DEFINE_string(
-    'trainID_dir',
+    'ID_dir',
     './gta/trainIDs/',
     'Path to save train id files.')
 
@@ -116,7 +117,7 @@ def create_folders(fol_name):
 
 
 annotation_folder = FLAGS.colored_labels
-trainID_folder = FLAGS.trainID_dir
+trainID_folder = FLAGS.ID_dir
 
 create_folders(trainID_folder)
 
@@ -198,7 +199,10 @@ file_names = get_file_names(annotation_folder)
 num_files = len(file_names)
 sample_annotation_files = file_names[:num_files]
 
-for s in sample_annotation_files:
+for i, s in enumerate(sample_annotation_files):
+    print("\rImages Processed: {}".format(i + 1), end=' ')
+    sys.stdout.flush()
+
     full_path = join(annotation_folder, s)
     color_annotated_img = cv2.imread(full_path)
 

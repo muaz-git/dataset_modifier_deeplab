@@ -4,9 +4,7 @@ from Plotter import Plotter
 from os import listdir
 from os.path import isfile, join
 from Iterator.GT_Pred_Iterator import GT_Pred_Iterator
-from Evaluation.labels import *
-from MetricsGeneratorPkg.Metric import Metric
-from MetricsGeneratorPkg.MetricsGenerator import MetricsGenerator
+import glob
 
 
 class Experiment(object):
@@ -57,43 +55,70 @@ class Experiment(object):
             print("\n\t File do not exist: ",
                   self.custom_eval_dir + "/resultPixelLevelSemanticLabeling_gta_custom.json")
 
+    @staticmethod
+    def get_cs_gt_filepaths():
+        server = "/run/user/477015036/gvfs/sftp:host=sonic.sb.dfki.de,user=mumu01"
+        cs_root_dir = server + '/home/mumu01/models/deeplab/datasets/cityscapes'
+        groundTruthSearch = os.path.join(cs_root_dir, "gtFine", "val", "*", "*_gtFine_labelIds.png")
+        groundTruthImgList = glob.glob(groundTruthSearch)
+        groundTruthImgList.sort()
+        return groundTruthImgList
+
+    @staticmethod
+    def get_cs_img_filepaths():
+        server = "/run/user/477015036/gvfs/sftp:host=sonic.sb.dfki.de,user=mumu01"
+        cs_root_dir = server + '/home/mumu01/models/deeplab/datasets/cityscapes'
+        groundTruthSearch = os.path.join(cs_root_dir, "leftImg8bit", "val", "*", "*_leftImg8bit.png")
+        groundTruthImgList = glob.glob(groundTruthSearch)
+        groundTruthImgList.sort()
+        return groundTruthImgList
+
+    @staticmethod
+    def get_cs_disparity_filepaths():
+        server = "/run/user/477015036/gvfs/sftp:host=sonic.sb.dfki.de,user=mumu01"
+        cs_root_dir = server + '/home/mumu01/models/deeplab/datasets/cityscapes'
+        disparitySearch = os.path.join(cs_root_dir, "disparity", "val", "*", "*_disparity.png")
+        disparityImgList = glob.glob(disparitySearch)
+        disparityImgList.sort()
+        return disparityImgList
+
+    @staticmethod
+    def get_gta_gt_filepaths(self):
+        server = "/run/user/477015036/gvfs/sftp:host=sonic.sb.dfki.de,user=mumu01"
+        gta_root_dir = server + '/home/mumu01/models/deeplab/datasets/gta/Ids'
+        pred_gta = self.vis_gta_dir
+        pred_filenames = self.get_file_names(pred_gta)
+
+        groundTruthImgList = []
+
+        for filePath in pred_filenames:
+            f = os.path.basename(filePath)
+            groundTruthImgList.append(gta_root_dir + '/' + f)
+        groundTruthImgList.sort()
+        return groundTruthImgList
+
     def get_gt_pred_iterator(self, eval_dataset="cs"):
-        print("Need to handle")
-        exit()
+
         if not eval_dataset in ["gta", "cs"]:
             raise ValueError("Invalid dataset in get_gt_pred_iterator : ", eval_dataset)
-        gt_loc = ""
+
+        gt_paths = self.get_cs_gt_filepaths()
+        disparity_paths = self.get_cs_disparity_filepaths()
         pred_loc = self.vis_cityscapes_dir
+        img_paths = self.get_cs_img_filepaths()
 
         if eval_dataset == "gta":
-            gt_loc = ""
-            pred_loc = self.vis_cityscapes_dir
-        gt_paths = self.get_file_names(gt_loc)
+            gt_paths = self.get_gta_gt_filepaths(self)
+            pred_loc = self.vis_gta_dir
+            disparity_paths = None
+
         pred_paths = self.get_file_names(pred_loc)
 
-        gt_pred_iter = GT_Pred_Iterator(ground_truth_filenames=gt_paths, prediction_filenames=pred_paths)
+        gt_pred_iter = GT_Pred_Iterator(ground_truth_filenames=gt_paths, prediction_filenames=pred_paths,
+                                        disparity_filenames=disparity_paths, image_paths=img_paths,
+                                        dataset=eval_dataset)
 
         return gt_pred_iter
-
-    def evaluate_cs(self):
-        gt_pred_iter = self.get_gt_pred_iterator(eval_dataset="cs")
-        labels_all = {label.name: label.id for label in labels if not label.id < 0}
-        metric = Metric(len(labels_all), [l for l in labels_all], useUnlabeled=True)
-        row_idx = np.array([7, 8, 11, 12, 13, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 31, 32, 33])
-
-        MetricsGenerator.saveJSON(iterator=gt_pred_iter, metric=metric,
-                                  json_path=self.custom_eval_dir + "/resultPixelLevelSemanticLabeling_cityscapes_custom.json",
-                                  ref_labels=labels_all, row_idx=row_idx)
-
-    def evaluate_gta(self):
-        gt_pred_iter = self.get_gt_pred_iterator(eval_dataset="gta")
-        labels_all = {label.name: label.id for label in labels if not label.id < 0}
-        metric = Metric(len(labels_all), [l for l in labels_all], useUnlabeled=True)
-        row_idx = np.array([7, 8, 11, 12, 13, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 31, 32, 33])
-
-        MetricsGenerator.saveJSON(iterator=gt_pred_iter, metric=metric,
-                                  json_path=self.custom_eval_dir + "/resultPixelLevelSemanticLabeling_gta_custom.json",
-                                  ref_labels=labels_all, row_idx=row_idx)
 
     def initialize_dir_vars(self):
         self.train_dir = self.exp_path + '/train'
@@ -142,3 +167,16 @@ class Experiment(object):
         only_files = [join(dir_name, f) for f in listdir(dir_name) if isfile(join(dir_name, f))]
         only_files.sort()
         return only_files
+
+
+if __name__ == '__main__':
+    server = "/run/user/477015036/gvfs/sftp:host=sonic.sb.dfki.de,user=mumu01"
+    exps_root_dir = server + "/home/mumu01/exps"
+    exps = ["55"]
+
+    for exp_num in exps:
+        re_eval = False
+        exp_dir = exps_root_dir + '/exp' + exp_num
+        exp_obj = Experiment(exp_dir)
+        exp_obj.load_custom_eval()
+        exp_obj.save_all_results_pngs()

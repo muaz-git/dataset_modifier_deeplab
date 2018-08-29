@@ -41,14 +41,15 @@ def get_file_names(dir_name):
 def split_train_val_sets():
     np.random.seed(0)  # setting seed to 0 for regeneration
 
-    val_percent = 0.15
+    val_percent = 0.1
     img_dir_name = FLAGS.img_dir_name
     labels_dir_name = FLAGS.trainIDs_dir_name
 
     image_files = get_file_names(img_dir_name)
     label_files = get_file_names(labels_dir_name)
 
-    number_of_val_images = int(val_percent * len(image_files))
+    # fixing number of validation images.
+    number_of_val_images = 2500  # int(val_percent * len(image_files))
 
     indices = np.random.permutation(len(image_files))
 
@@ -110,7 +111,8 @@ def _convert_dataset(dataset_split, dataset):
                     print("Shape mismatched between image and label. height. Ignoring.")
                     continue
                     raise RuntimeError('Shape mismatched between image and label. height : ', height, ' seg_height: ',
-                                       seg_height, ' width: ', width, ' seg_width: ', seg_width, ' \nlabel_files[i]: ', label_files[i], ' image_files[i]: ', image_files[i])
+                                       seg_height, ' width: ', width, ' seg_width: ', seg_width, ' \nlabel_files[i]: ',
+                                       label_files[i], ' image_files[i]: ', image_files[i])
                 # Convert to tf example.
 
                 if not (image_files[i] == label_files[i]):
@@ -131,7 +133,7 @@ def main(unused_argv):
     my_dict = split_train_val_sets()
 
     for dataset_split in ['train', 'val']:
-        print("converting : "+dataset_split+" set.")
+        print("converting : " + dataset_split + " set.")
         _convert_dataset(dataset_split, my_dict[dataset_split])
 
 

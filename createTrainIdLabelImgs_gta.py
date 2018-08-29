@@ -6,7 +6,7 @@ from os.path import isfile, join
 import os
 from collections import namedtuple
 import tensorflow as tf
-
+import sys
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -171,7 +171,7 @@ def get_gtFine_labelTrainIds(color_annotated_img):
 # depreciated
 def get_colored_img_from_gtFine_labelTrainIds(labelTrainIds_img):
     r, c = np.shape(labelTrainIds_img)
-    colored_img = np.zeros((r, c, 3), dtype=np.uint8), 255
+    colored_img = np.zeros((r, c, 3), dtype=np.uint8)#, 255
     for l in labels:
         if not (l.trainId == 255) and not ((l.trainId == -1)):
             lookup_trainID = l.trainId
@@ -189,17 +189,37 @@ def get_colored_img_from_gtFine_labelTrainIds(labelTrainIds_img):
 
     return colored_img
 
+# annotation_folder = FLAGS.colored_labels
 
+
+# server = "/run/user/477015036/gvfs/sftp:host=sonic.sb.dfki.de,user=mumu01"
+# annotation_folder = server+ "/home/mumu01/models/deeplab/datasets/gta/labels"
+#
+# trainID_folder = server+ "/home/mumu01/models/deeplab/datasets/gta/trainIDs"
+# create_folders(trainID_folder)
 
 file_names = get_file_names(annotation_folder)
+
 # file_names = ['00002.png', '00003.png', '00005.png']
 num_files = len(file_names)
+
 sample_annotation_files = file_names[:num_files]
 
-for s in sample_annotation_files:
+for idx, s in enumerate(sample_annotation_files):
+    print("\rImages Processed: {}".format(idx + 1), end=' ')
+    sys.stdout.flush()
+
     full_path = join(annotation_folder, s)
-    color_annotated_img = cv2.imread(full_path)
+    color_annotated_img = cv2.imread(full_path, -1)
 
     labelTrainIds_img = get_gtFine_labelTrainIds(color_annotated_img)
+
+    # colored_back = get_colored_img_from_gtFine_labelTrainIds(labelTrainIds_img)
+    #
+    # cv2.imshow("original", color_annotated_img)
+    # cv2.imshow("temp", colored_back)
+    # cv2.waitKey()
     cv2.imwrite(join(trainID_folder, s),
                 labelTrainIds_img, [cv2.IMWRITE_PNG_COMPRESSION, 9])  # need to make sure if saving doesn't effect the values in side
+
+
